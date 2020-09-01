@@ -45,7 +45,7 @@ public static class ArduinoCommunicator
             }
         }
 
-        Debug.Log("Killed...");
+        Debug.Log("Port Connection Killed...");
         _GlobalVariables.communicatorThreadExists = false;
         _GlobalVariables.portFound = false;
         _GlobalVariables.isReadingArduinoData = false;
@@ -57,6 +57,7 @@ public static class ArduinoCommunicator
     /// </summary>
     private static void DetectPlatform()
     {
+        Debug.Log("Detect Platform for port");
         while (!_GlobalVariables.portFound && !_GlobalVariables.killCommunicator)
         {
             if (ShouldEndThread())
@@ -67,24 +68,45 @@ public static class ArduinoCommunicator
 
             try
             {
+                Debug.Log("Testing Windows");
+
+                string[] portNames = SerialPort.GetPortNames();
+                Debug.Log("Number of serial ports (Windows): " + portNames.Length);
+                foreach (string currPortName in portNames)
+                {
+                    Debug.Log(currPortName);
+                    try {
+                        stream = new SerialPort(currPortName);
+                        stream.Open();
+                        _GlobalVariables.portFound = true;
+                        Debug.Log("Port " + currPortName + " in usage");
+                    } catch (Exception) {
+                        continue;
+                    }
+                }
+
+                //even though we technically should have checked this, 
+                //we need it to throw an uncaught exception, so we can check for Mac
+                //, because the other exceptions were all caught
                 stream = new SerialPort(winPortName);   //windows
                 stream.Open();
                 _GlobalVariables.portFound = true;
-                //Debug.Log("Windows port");
+                Debug.Log("Windows port");
             }
-            catch (Exception) //TODO: figure out why exception is thrown
+            catch (Exception) //Exception thrown when all Windows ports do not work
             {
+                Debug.Log("Testing Mac");
                 try
                 {
                     stream = new SerialPort(macPortName);   //mac
                     stream.Open();
                     _GlobalVariables.portFound = true;
-                    //Debug.Log("Mac port");
+                    Debug.Log("Mac port");
                 }
                 catch (Exception)
                 {
                     stream = null;  //keyboard
-                    //Debug.Log("No port found");
+                    Debug.Log("No port found");
                 }
             }
         }
