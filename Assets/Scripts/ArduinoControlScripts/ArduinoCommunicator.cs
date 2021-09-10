@@ -10,7 +10,7 @@ public static class ArduinoCommunicator
     /// Port names to be checked on each platform
     /// </summary>
     private const string macPortName = "/dev/tty.usbmodem1411";
-    private const string winPortName = "COM6";
+    private const string winPortName = "COM4";
 
     /// <summary>
     /// The serial port object communications are active on
@@ -70,31 +70,40 @@ public static class ArduinoCommunicator
             {
                 Debug.Log("Testing Windows");
 
-                string[] portNames = SerialPort.GetPortNames();
-                Debug.Log("Number of serial ports (Windows): " + portNames.Length);
-                foreach (string currPortName in portNames)
-                {
-                    Debug.Log(currPortName);
-                    try {
-                        stream = new SerialPort(currPortName);
-                        stream.Open();
-                        _GlobalVariables.portFound = true;
-                        Debug.Log("Port " + currPortName + " in usage");
-                    } catch (Exception) {
-                        continue;
-                    }
-                }
+                // string[] portNames = SerialPort.GetPortNames();
+                // Debug.Log("Number of serial ports (Windows): " + portNames.Length);
+                // foreach (string currPortName in portNames)
+                // {
+                //     Debug.Log(currPortName);
+                //     try {
+                //         stream = new SerialPort(currPortName);
+                //         stream.Open();
+                //         _GlobalVariables.portFound = true;
+                //         Debug.Log("Port " + currPortName + " in usage");
+                //     } catch (Exception) {
+                //         continue;
+                //     }
+                // }
+
+                Debug.Log (Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory));
+                var sr = new StreamReader(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory).ToString() + "/portconf");
+                var fileContents = sr.ReadToEnd();
+                sr.Close();
+                Debug.Log(fileContents);
+                // winPortName = fileContents;
+                
 
                 //even though we technically should have checked this, 
                 //we need it to throw an uncaught exception, so we can check for Mac
                 //, because the other exceptions were all caught
-                stream = new SerialPort(winPortName);   //windows
+                stream = new SerialPort(fileContents);   //windows
                 stream.Open();
                 _GlobalVariables.portFound = true;
                 Debug.Log("Windows port");
             }
-            catch (Exception) //Exception thrown when all Windows ports do not work
+            catch (Exception ex) //Exception thrown when all Windows ports do not work
             {
+                Debug.Log (ex.ToString());
                 Debug.Log("Testing Mac");
                 try
                 {
